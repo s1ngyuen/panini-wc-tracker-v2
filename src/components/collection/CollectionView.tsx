@@ -116,7 +116,7 @@ export default function CollectionView() {
   return (
     <>
       {/* Page title */}
-      <div style={{ padding: '0 16px 12px' }}>
+      <div style={{ padding: '24px 16px 20px' }}>
         <span className="page-title">Collection</span>
       </div>
 

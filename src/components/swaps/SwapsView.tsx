@@ -120,7 +120,7 @@ export default function SwapsView() {
   return (
     <div>
       {/* Page title */}
-      <div style={{ padding: '0 16px 12px' }}>
+      <div style={{ padding: '24px 16px 20px' }}>
         <span className="page-title">Swaps</span>
       </div>
 
