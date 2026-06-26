@@ -270,15 +270,36 @@ export default function PendingTradeCard({ trade, collection: _collection, onUpd
     );
   }
 
+  function toggleProposed() {
+    onUpdate(trade.id, { proposed: !trade.proposed });
+  }
+
   // ── Read-only view ─────────────────────────────────────────────────────────
 
   return (
     <div className="pending-trade-card">
       {/* Header */}
       <div className="pending-trade-card__header">
-        <span className="pending-trade-card__partner">
-          Trade with {trade.trade_with || 'Unknown'}
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span className="pending-trade-card__partner">
+            Trade with {trade.trade_with || 'Unknown'}
+          </span>
+          {trade.proposed && (
+            <span style={{
+              fontSize: '10px',
+              fontFamily: 'var(--font-display)',
+              textTransform: 'uppercase',
+              letterSpacing: '.06em',
+              background: 'rgba(197,160,40,0.15)',
+              color: 'var(--accent)',
+              border: '1px solid var(--accent)',
+              borderRadius: '4px',
+              padding: '2px 6px',
+            }}>
+              Proposed
+            </span>
+          )}
+        </div>
         <span className="pending-trade-card__age">
           {relativeTime(trade.created_at)}
         </span>
@@ -294,6 +315,14 @@ export default function PendingTradeCard({ trade, collection: _collection, onUpd
       <div className="pending-trade-card__actions">
         <button type="button" className="btn-secondary" onClick={handleCopy}>
           Copy Message
+        </button>
+        <button
+          type="button"
+          className="btn-secondary"
+          style={trade.proposed ? { background: 'rgba(197,160,40,0.12)', borderColor: 'var(--accent)', color: 'var(--accent)' } : {}}
+          onClick={toggleProposed}
+        >
+          {trade.proposed ? 'Proposed ✓' : 'Proposed'}
         </button>
         <button type="button" className="btn-secondary" onClick={() => setIsEditing(true)}>
           Edit

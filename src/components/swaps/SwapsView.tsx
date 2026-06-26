@@ -49,11 +49,28 @@ export default function SwapsView() {
     try {
       await addTrade(tradeBody);
       showToast(`Trade with ${tradeBody.trade_with || 'partner'} saved as pending.`, 'success');
-      // Reset generate form state
       setPartnerName('');
       setAnalysisResults(null);
     } catch {
       // Error toast is shown by addTrade
+    }
+  }
+
+  async function handleGenerateTrade(groups: import('@/lib/swap-utils').TradeGroup[], partner: string) {
+    // Save the best group as a proposed pending trade
+    const best = groups[0];
+    try {
+      await addTrade({
+        offering:   best.offer.map(c => ({ cardId: String(c.id), count: 1 })),
+        requesting: best.needCards.map(c => ({ cardId: String(c.id), count: 1 })),
+        trade_with: partner || undefined,
+        proposed:   true,
+      });
+      showToast(`Proposed trade with ${partner || 'partner'} added.`, 'success');
+      setPartnerName('');
+      setAnalysisResults(null);
+    } catch {
+      // Error toast shown by addTrade
     }
   }
 
@@ -158,7 +175,7 @@ export default function SwapsView() {
               className={`gen-tab${activeTab === 'custom' ? ' gen-tab--active' : ''}`}
               onClick={() => setActiveTab('custom')}
             >
-              Custom Trade
+              Generate Custom Trade
             </button>
           </div>
 
@@ -169,6 +186,7 @@ export default function SwapsView() {
                 collection={collection}
                 onAnalyse={handleAnalyse}
                 onMax={handleMax}
+                onGenerateTrade={handleGenerateTrade}
                 partnerName={partnerName}
                 onPartnerNameChange={setPartnerName}
               />

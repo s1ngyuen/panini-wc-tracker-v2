@@ -24,7 +24,7 @@ export default function CollectionView() {
   const { trades } = useTrades();
   const { runMigration } = useMigration();
 
-  const [activeTab, setActiveTab] = useState<TabKey>('all');
+  const [activeTab, setActiveTab] = useState<TabKey>('core');
   const [lightboxCard, setLightboxCard] = useState<Card | BonusCard | null>(null);
   const [progressModalOpen, setProgressModalOpen] = useState(false);
   const [pricesVersion, setPricesVersion] = useState(0);
@@ -39,11 +39,15 @@ export default function CollectionView() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ── Pending card IDs (requesting side of pending trades) ─────────────────
+  // ── Pending card IDs ──────────────────────────────────────────────────────
+  // For proposed trades: offering cards are committed (locked), requesting are NOT pending.
+  // For non-proposed trades: requesting cards show as pending in the UI.
   const pendingCardIds = useMemo<Set<string>>(() => {
     const ids = new Set<string>();
     trades.forEach(trade => {
-      trade.requesting.forEach(item => ids.add(item.cardId));
+      if (!trade.proposed) {
+        trade.requesting.forEach(item => ids.add(item.cardId));
+      }
       trade.offering.forEach(item => ids.add(item.cardId));
     });
     return ids;

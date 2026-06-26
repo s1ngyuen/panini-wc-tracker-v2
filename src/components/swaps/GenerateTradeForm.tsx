@@ -11,6 +11,7 @@ interface Props {
   collection: CollectionMap;
   onAnalyse: (results: TradeGroup[]) => void;
   onMax: (results: TradeGroup[]) => void;
+  onGenerateTrade: (groups: TradeGroup[], partnerName: string) => void;
   partnerName: string;
   onPartnerNameChange: (name: string) => void;
 }
@@ -19,6 +20,7 @@ export default function GenerateTradeForm({
   collection,
   onAnalyse,
   onMax,
+  onGenerateTrade,
   partnerName,
   onPartnerNameChange,
 }: Props) {
@@ -79,6 +81,20 @@ export default function GenerateTradeForm({
       ? buildEqualOffer(youGet, myDuplicates, partnerWants)
       : buildSuggestedOffer(youGet, myDuplicates, partnerWants);
     onAnalyse(groups);
+  }
+
+  function handleGenerateTrade() {
+    const data = getInputData();
+    if (!data) return;
+    const { youGet, myDuplicates, partnerWants } = data;
+    const groups = equalMode
+      ? buildEqualOffer(youGet, myDuplicates, partnerWants)
+      : buildSuggestedOffer(youGet, myDuplicates, partnerWants);
+    if (groups.length === 0) {
+      showToast('No matching trades found.', 'error');
+      return;
+    }
+    onGenerateTrade(groups, partnerName);
   }
 
   function handleMax() {
@@ -166,9 +182,9 @@ export default function GenerateTradeForm({
             type="button"
             className="btn-primary"
             style={{ flex: 1 }}
-            onClick={handleAnalyse}
+            onClick={handleGenerateTrade}
           >
-            Analyse Swap
+            Generate Trade
           </button>
           <button
             type="button"

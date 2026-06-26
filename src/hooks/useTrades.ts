@@ -14,12 +14,14 @@ export interface AddTradeBody {
   offering: TradeItem[];
   requesting: TradeItem[];
   trade_with?: string;
+  proposed?: boolean;
 }
 
 export interface UpdateTradeBody {
   offering?: TradeItem[];
   requesting?: TradeItem[];
   trade_with?: string;
+  proposed?: boolean;
 }
 
 export function useTrades() {
@@ -45,6 +47,7 @@ export function useTrades() {
       offering: body.offering,
       requesting: body.requesting,
       trade_with: body.trade_with ?? null,
+      proposed: body.proposed ?? false,
       created_at: new Date().toISOString(),
     };
 

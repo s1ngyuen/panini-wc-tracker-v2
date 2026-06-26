@@ -7,6 +7,8 @@ import { TEAM_COLORS, TYPE_COLORS } from '@/data/progress-colours';
 
 const TOTAL = 630;
 
+const BASE_TYPES = new Set(['Hero', 'Icon', 'Fan Favourite', 'Team Crest', 'Contender']);
+
 interface Props {
   isOpen: boolean;
   onClose: () => void;
@@ -69,10 +71,10 @@ export default function ProgressModal({ isOpen, onClose, collection, pendingCard
   const pct        = TOTAL > 0 ? ((ownedCount  / TOTAL) * 100).toFixed(1) : '0.0';
   const pendingPct = TOTAL > 0 ? ((pendingCount / TOTAL) * 100).toFixed(1) : '0.0';
 
-  // ── Per-team totals ──────────────────────────────────────────────────────
+  // ── Per-team totals (base cards only) ───────────────────────────────────
   const teamTotals: Record<string, { total: number; owned: number; pending: number }> = {};
   TEAMS.forEach(t => { teamTotals[t] = { total: 0, owned: 0, pending: 0 }; });
-  CARDS.forEach(c => {
+  CARDS.filter(c => BASE_TYPES.has(c.cardType)).forEach(c => {
     if (!teamTotals[c.country]) return;
     teamTotals[c.country].total++;
     const n = collection[String(c.id)] ?? 0;
@@ -182,12 +184,13 @@ export default function ProgressModal({ isOpen, onClose, collection, pendingCard
               {/* ── By Team ── */}
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div className="category-heading">
-                  <span className="fx category-heading__text">By Team</span>
+                  <span className="fx category-heading__text">Base Collection by Team</span>
                 </div>
                 <div className="prog-rows">
-                  {TEAMS.map(team => {
+                  {[...TEAMS.filter(t => t !== '-'), ...(TEAMS.includes('-') ? ['-'] : [])].map(team => {
                     const { total, owned, pending } = teamTotals[team] ?? { total: 0, owned: 0, pending: 0 };
                     if (total === 0) return null;
+                    const displayTeam = team === '-' ? 'Other' : team;
                     const p  = Math.round((owned   / total) * 100);
                     const pp = Math.round((pending  / total) * 100);
                     const colors = TEAM_COLORS[team] ?? { fill: '#304FFE', track: '#E4EAFF' };
@@ -208,8 +211,8 @@ export default function ProgressModal({ isOpen, onClose, collection, pendingCard
                         >
                           <img
                             className="prog-row__crest-img"
-                            src={teamCrestSrc(team)}
-                            alt={`${team} badge`}
+                            src={teamCrestSrc(displayTeam)}
+                            alt={`${displayTeam} badge`}
                             onError={e => {
                               const img = e.currentTarget;
                               img.style.display = 'none';
@@ -221,13 +224,13 @@ export default function ProgressModal({ isOpen, onClose, collection, pendingCard
                             className="prog-row__crest-initials"
                             style={{ display: 'none' }}
                           >
-                            {initials}
+                            {teamInitials(displayTeam)}
                           </span>
                         </div>
 
                         <div className="prog-row__content">
                           <div className="prog-row__header">
-                            <span className="prog-row__name">{team}</span>
+                            <span className="prog-row__name">{displayTeam}</span>
                             <span className="prog-row__fraction">
                               <span className="prog-row__owned-n">{owned}</span>
                               <span className="prog-row__of"> of {total} cards</span>

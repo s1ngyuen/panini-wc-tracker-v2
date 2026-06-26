@@ -10,5 +10,6 @@ export interface Trade {
   trade_with: string | null;
   offering:   TradeItem[];
   requesting: TradeItem[];
+  proposed:   boolean;
   created_at: string; // ISO timestamp string
 }

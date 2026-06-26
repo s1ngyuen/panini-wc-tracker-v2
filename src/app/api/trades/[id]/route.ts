@@ -36,7 +36,8 @@ export async function PATCH(
     offering,
     requesting,
     trade_with,
-  } = body as { offering?: unknown; requesting?: unknown; trade_with?: unknown };
+    proposed,
+  } = body as { offering?: unknown; requesting?: unknown; trade_with?: unknown; proposed?: unknown };
 
   // Validate any provided array fields
   const isValidItems = (items: unknown[]): items is TradeItem[] =>
@@ -81,6 +82,7 @@ export async function PATCH(
         ? trade_with.trim()
         : null;
   }
+  if (proposed !== undefined) updateFields.proposed = proposed === true;
 
   if (Object.keys(updateFields).length === 0) {
     return NextResponse.json(
@@ -109,6 +111,7 @@ export async function PATCH(
     trade_with: updated.trade_with,
     offering:   updated.offering   as TradeItem[],
     requesting: updated.requesting as TradeItem[],
+    proposed:   updated.proposed,
     created_at: updated.created_at.toISOString(),
   };
 

@@ -108,5 +108,6 @@ export const pending_trades = pgTable('pending_trades', {
   offering:   jsonb('offering').notNull(),    // TradeItem[] — { cardId: string; count: number }[]
   requesting: jsonb('requesting').notNull(),  // TradeItem[] — { cardId: string; count: number }[]
   trade_with: text('trade_with'),             // partner display name — nullable
+  proposed:   boolean('proposed').notNull().default(false),
   created_at: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });

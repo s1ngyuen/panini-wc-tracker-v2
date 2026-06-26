@@ -7,7 +7,6 @@ import { pending_trades } from '@/db/schema';
 import type { Trade, TradeItem } from '@/types';
 
 // ── GET /api/trades ───────────────────────────────────────────────────────────
-// Returns all pending trades for the authenticated user, newest first.
 export async function GET(): Promise<NextResponse> {
   const session = await auth();
   if (!session?.user?.id) {
@@ -26,6 +25,7 @@ export async function GET(): Promise<NextResponse> {
     trade_with: row.trade_with,
     offering:   row.offering   as TradeItem[],
     requesting: row.requesting as TradeItem[],
+    proposed:   row.proposed,
     created_at: row.created_at.toISOString(),
   }));
 
@@ -33,8 +33,7 @@ export async function GET(): Promise<NextResponse> {
 }
 
 // ── POST /api/trades ──────────────────────────────────────────────────────────
-// Creates a new pending trade.
-// Body: { offering: TradeItem[]; requesting: TradeItem[]; trade_with?: string }
+// Body: { offering: TradeItem[]; requesting: TradeItem[]; trade_with?: string; proposed?: boolean }
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const session = await auth();
   if (!session?.user?.id) {
@@ -57,7 +56,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     offering,
     requesting,
     trade_with = null,
-  } = body as { offering?: unknown; requesting?: unknown; trade_with?: string };
+    proposed = false,
+  } = body as { offering?: unknown; requesting?: unknown; trade_with?: string; proposed?: boolean };
 
   if (!Array.isArray(offering) || !Array.isArray(requesting)) {
     return NextResponse.json(
@@ -73,7 +73,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
 
-  // Validate each TradeItem has the expected shape
   const isValidItems = (items: unknown[]): items is TradeItem[] =>
     items.every(
       (item) =>
@@ -101,6 +100,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       offering,
       requesting,
       trade_with: tradeWith,
+      proposed:   proposed === true,
     })
     .returning();
 
@@ -109,6 +109,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     trade_with: created.trade_with,
     offering:   created.offering   as TradeItem[],
     requesting: created.requesting as TradeItem[],
+    proposed:   created.proposed,
     created_at: created.created_at.toISOString(),
   };
 
