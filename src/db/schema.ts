@@ -1,6 +1,5 @@
 import {
   pgTable,
-  uuid,
   text,
   integer,
   jsonb,
@@ -8,13 +7,15 @@ import {
   unique,
   boolean,
   primaryKey,
+  uuid,
 } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 
 // ── users ─────────────────────────────────────────────────────────────────────
-// Passed to the NextAuth DrizzleAdapter as usersTable.
-// emailVerified is required by the adapter contract; created_at is our addition.
+// id is text (not uuid) to match the NextAuth DrizzleAdapter which writes text IDs.
+// The default generates a UUID string via gen_random_uuid().
 export const users = pgTable('users', {
-  id:            uuid('id').primaryKey().defaultRandom(),
+  id:            text('id').primaryKey().default(sql`gen_random_uuid()`),
   email:         text('email').notNull().unique(),
   emailVerified: timestamp('emailVerified', { mode: 'date' }),
   name:          text('name'),
@@ -92,7 +93,7 @@ export const authenticators = pgTable(
 // card_id is text to handle numeric core cards ("42") and bonus IDs ("LE-001", "DB1").
 export const card_counts = pgTable('card_counts', {
   id:         uuid('id').primaryKey().defaultRandom(),
-  user_id:    uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  user_id:    text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   card_id:    text('card_id').notNull(),
   count:      integer('count').notNull().default(0),
   updated_at: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
@@ -103,7 +104,7 @@ export const card_counts = pgTable('card_counts', {
 // ── pending_trades ────────────────────────────────────────────────────────────
 export const pending_trades = pgTable('pending_trades', {
   id:         uuid('id').primaryKey().defaultRandom(),
-  user_id:    uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  user_id:    text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   offering:   jsonb('offering').notNull(),    // TradeItem[] — { cardId: string; count: number }[]
   requesting: jsonb('requesting').notNull(),  // TradeItem[] — { cardId: string; count: number }[]
   trade_with: text('trade_with'),             // partner display name — nullable
