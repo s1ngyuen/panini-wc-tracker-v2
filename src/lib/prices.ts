@@ -52,6 +52,13 @@ export function getUpdated(): string {
   return _updated;
 }
 
+/** Merge live-fetched prices into the in-memory store and broadcast an update. */
+export function injectPrices(prices: Record<string, number | null>, currency?: string): void {
+  Object.assign(_prices, prices);
+  if (currency) _currency = currency;
+  _loaded = true;
+}
+
 export interface PriceSummary {
   priced:   number;
   total:    number;

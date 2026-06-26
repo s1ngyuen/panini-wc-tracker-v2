@@ -15,6 +15,7 @@ import CorePanel from './CorePanel';
 import BonusPanel from './BonusPanel';
 import DupesPanel from './DupesPanel';
 import CardLightbox from './CardLightbox';
+import EbayStrip from './EbayStrip';
 
 type TabKey = 'all' | 'core' | 'upgrades' | 'le' | 'wcm' | 'special' | 'dupes';
 
@@ -26,11 +27,15 @@ export default function CollectionView() {
   const [activeTab, setActiveTab] = useState<TabKey>('all');
   const [lightboxCard, setLightboxCard] = useState<Card | BonusCard | null>(null);
   const [progressModalOpen, setProgressModalOpen] = useState(false);
+  const [pricesVersion, setPricesVersion] = useState(0);
 
-  // Run migration once on mount
+  // Run migration once on mount; refresh stats when eBay prices are injected
   useEffect(() => {
     runMigration();
     loadPrices();
+    const handler = () => setPricesVersion(v => v + 1);
+    window.addEventListener('prices-updated', handler);
+    return () => window.removeEventListener('prices-updated', handler);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -88,7 +93,7 @@ export default function CollectionView() {
       needCount,
       valueStr,
     };
-  }, [activeTab, collection, pendingCardIds]);
+  }, [activeTab, collection, pendingCardIds, pricesVersion]);
 
   // Lightbox card count from live collection
   const lightboxCount = lightboxCard ? (collection[String(lightboxCard.id)] ?? 0) : 0;
@@ -132,6 +137,9 @@ export default function CollectionView() {
         dupes={stats.dupeCount}
         value={stats.valueStr}
       />
+
+      {/* eBay price fetcher */}
+      <EbayStrip collection={collection} />
 
       {/* Tab bar */}
       <CollectionTabBar activeTab={activeTab} onChange={handleTabChange} />
