@@ -1,6 +1,6 @@
-// Auth temporarily disabled for UI inspection — re-enable before going live
-export default function middleware() {}
+export { auth as middleware } from '@/auth';
 
 export const config = {
-  matcher: ['/collection/:path*', '/swaps/:path*', '/api/:path*'],
+  // Only protect page routes — API routes handle auth themselves (return 401)
+  matcher: ['/collection/:path*', '/swaps/:path*'],
 };

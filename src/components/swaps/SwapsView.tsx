@@ -119,6 +119,11 @@ export default function SwapsView() {
 
   return (
     <div>
+      {/* Page title */}
+      <div style={{ padding: '0 16px 12px' }}>
+        <span className="page-title">Swaps</span>
+      </div>
+
       {/* Two-column layout: Generate (left) / Pending Trades (right) */}
       <div className="swap-layout">
 
