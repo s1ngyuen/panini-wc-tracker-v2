@@ -37,7 +37,7 @@ export default function CorePanel({ collection, pendingCardIds, onCardClick }: P
 
   return (
     <div className="coll-panel">
-      <div className="px-4 pb-3">
+      <div className="px-4 pb-4 pt-3">
         <FilterBar
           title="Core Collection"
           teams={TEAMS}

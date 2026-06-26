@@ -139,3 +139,58 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   return NextResponse.json({ imported: rows.length }, { status: 201 });
 }
+
+// ── PUT /api/collection ───────────────────────────────────────────────────────
+// Replaces the entire collection with the supplied map.
+// Body: { [cardId: string]: number }
+export async function PUT(req: NextRequest): Promise<NextResponse> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  const userId = session.user.id;
+
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+  }
+
+  if (typeof body !== 'object' || body === null || Array.isArray(body)) {
+    return NextResponse.json(
+      { error: 'Body must be a flat { [cardId: string]: number } map' },
+      { status: 400 },
+    );
+  }
+
+  const incoming = body as Record<string, unknown>;
+
+  // Delete all existing rows for this user
+  await getDb().delete(card_counts).where(eq(card_counts.user_id, userId));
+
+  // Insert the new rows, skipping cards with count <= 0
+  const rows = Object.entries(incoming)
+    .filter(([, c]) => typeof c === 'number' && (c as number) > 0)
+    .map(([cardId, c]) => ({ user_id: userId, card_id: cardId, count: c as number }));
+
+  if (rows.length > 0) {
+    await getDb().insert(card_counts).values(rows);
+  }
+
+  return NextResponse.json({ imported: rows.length });
+}
+
+// ── DELETE /api/collection ────────────────────────────────────────────────────
+// Deletes all card_count rows for the current user (reset collection).
+export async function DELETE(): Promise<NextResponse> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  const userId = session.user.id;
+
+  await getDb().delete(card_counts).where(eq(card_counts.user_id, userId));
+
+  return NextResponse.json({ deleted: true });
+}

@@ -39,7 +39,7 @@ export default function AllCardsPanel({ collection, pendingCardIds, onCardClick 
 
   return (
     <div className="coll-panel">
-      <div className="px-4 pb-3 pt-1">
+      <div className="px-4 pb-4 pt-3">
         <FilterBar
           title="All Cards"
           teams={TEAMS}

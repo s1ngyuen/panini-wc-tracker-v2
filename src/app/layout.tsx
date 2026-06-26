@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import "./globals.css";
 import "./app.css";
 import { SessionProvider } from "next-auth/react";
 import { ToastProvider } from "@/components/ui/ToastProvider";

@@ -18,7 +18,7 @@ export default function DupesPanel({ collection, pendingCardIds, onCardClick }: 
 
   return (
     <div className="coll-panel">
-      <div className="px-4 pb-3">
+      <div className="px-4 pb-4 pt-3">
         <div className="flex items-center">
           <span className="filter-section-title">Duplicates</span>
         </div>

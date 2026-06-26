@@ -204,6 +204,7 @@ body::before {
   transform: scaleX(var(--squeeze));
   transform-origin: center;
   -webkit-tap-highlight-color: transparent;
+  text-decoration: none;
 }
 
 .nav-tab:hover { color: var(--accent-primary); }

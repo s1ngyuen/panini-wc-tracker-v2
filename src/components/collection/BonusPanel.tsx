@@ -37,7 +37,7 @@ export default function BonusPanel({ tabKey, collection, pendingCardIds, onCardC
 
   return (
     <div className="coll-panel">
-      <div className="px-4 pb-3 pt-1">
+      <div className="px-4 pb-4 pt-3">
         <div className="flex gap-2 items-center flex-wrap">
           <span className="filter-section-title">{label}</span>
 
