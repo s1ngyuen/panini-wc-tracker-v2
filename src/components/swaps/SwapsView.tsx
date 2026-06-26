@@ -119,14 +119,6 @@ export default function SwapsView() {
 
   return (
     <div>
-      {/* Page heading */}
-      <div className="px-4 py-4">
-        <div className="section-heading-wrap">
-          <div className="section-heading-bar" />
-          <span className="fx page-title">Swaps</span>
-        </div>
-      </div>
-
       {/* Two-column layout: Generate (left) / Pending Trades (right) */}
       <div className="swap-layout">
 

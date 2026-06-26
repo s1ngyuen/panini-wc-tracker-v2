@@ -52,6 +52,7 @@ export default function Navbar({ pendingCount }: NavbarProps) {
   const { data: session } = useSession();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [addCardsOpen, setAddCardsOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
 
   const isActive = (href: string) =>
     pathname === href || pathname.startsWith(href + '/');
@@ -114,6 +115,70 @@ export default function Navbar({ pendingCount }: NavbarProps) {
                 <span className="btn-scrl-inner">
                   <span>Add Cards</span>
                   <span>Add Cards</span>
+                </span>
+              </span>
+            </button>
+
+            {/* Export JSON — desktop only */}
+            <button
+              id="export-collection-btn"
+              type="button"
+              className="btn-reset"
+              aria-label="Export collection"
+              onClick={() => {
+                fetch('/api/collection')
+                  .then(r => r.json())
+                  .then(data => {
+                    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'wc2026-collection.json';
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  });
+              }}
+            >
+              <span className="btn-scrl">
+                <span className="btn-scrl-inner">
+                  <span>Export</span>
+                  <span>Export</span>
+                </span>
+              </span>
+            </button>
+
+            {/* Import JSON — desktop only */}
+            <button
+              id="import-collection-btn"
+              type="button"
+              className="btn-reset"
+              aria-label="Import collection"
+              onClick={() => setImportOpen(true)}
+            >
+              <span className="btn-scrl">
+                <span className="btn-scrl-inner">
+                  <span>Import</span>
+                  <span>Import</span>
+                </span>
+              </span>
+            </button>
+
+            {/* Reset — desktop only */}
+            <button
+              id="clear-collection-btn"
+              type="button"
+              className="btn-reset"
+              aria-label="Clear entire collection"
+              onClick={() => {
+                if (!confirm('Reset your entire collection? This cannot be undone.')) return;
+                fetch('/api/collection', { method: 'DELETE' })
+                  .then(() => window.location.reload());
+              }}
+            >
+              <span className="btn-scrl">
+                <span className="btn-scrl-inner">
+                  <span>Reset</span>
+                  <span>Reset</span>
                 </span>
               </span>
             </button>
@@ -187,6 +252,65 @@ export default function Navbar({ pendingCount }: NavbarProps) {
         isOpen={addCardsOpen}
         onClose={() => setAddCardsOpen(false)}
       />
+
+      {/* Import JSON modal */}
+      {importOpen && (
+        <div
+          id="import-modal"
+          style={{
+            display: 'flex',
+            position: 'fixed',
+            inset: 0,
+            zIndex: 500,
+            background: 'rgba(0,0,0,0.6)',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+          onClick={(e) => { if (e.target === e.currentTarget) setImportOpen(false); }}
+        >
+          <div style={{ background: '#fff', padding: '28px', width: 'min(480px,90vw)', position: 'relative' }}>
+            <p style={{ fontFamily: 'var(--font-display)', fontSize: '18px', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: '8px' }}>Import Collection</p>
+            <p style={{ fontSize: '12px', color: '#666', marginBottom: '12px' }}>Paste the JSON you exported, then click Import.</p>
+            <textarea
+              id="import-json"
+              style={{ width: '100%', height: '140px', fontSize: '11px', fontFamily: 'monospace', border: '1px solid #ddd', padding: '8px', resize: 'vertical' }}
+              placeholder='{"1":2,"42":1,...}'
+            />
+            <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+              <button
+                type="button"
+                className="btn-primary"
+                style={{ flex: 1 }}
+                onClick={() => {
+                  const textarea = document.getElementById('import-json') as HTMLTextAreaElement | null;
+                  if (!textarea) return;
+                  let parsed: Record<string, number>;
+                  try { parsed = JSON.parse(textarea.value); } catch { alert('Invalid JSON'); return; }
+                  fetch('/api/collection', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(parsed),
+                  }).then(r => {
+                    if (!r.ok) { alert('Import failed'); return; }
+                    setImportOpen(false);
+                    window.location.reload();
+                  });
+                }}
+              >
+                Import
+              </button>
+              <button
+                type="button"
+                className="btn-reset"
+                style={{ flex: 1 }}
+                onClick={() => setImportOpen(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
