@@ -42,10 +42,11 @@ function searchCards(query: string): AnyCard[] {
 }
 
 export default function CardInput({ onDone }: { onDone?: () => void } = {}) {
-  const { collection, addCard } = useCollection();
+  const { collection, batchAddCards } = useCollection();
   const { show: showToast } = useToast();
 
   const [query, setQuery] = useState('');
+  const [committing, setCommitting] = useState(false);
   const [selectedCard, setSelectedCard] = useState<AnyCard | null>(null);
   const [dropdownResults, setDropdownResults] = useState<AnyCard[]>([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -176,18 +177,23 @@ export default function CardInput({ onDone }: { onDone?: () => void } = {}) {
     );
     if (!confirmed) return;
 
+    // Compute stats before the async call (uses current collection snapshot)
     const binderPages = new Set<number>();
     let newCount = 0;
     let dupeCount = 0;
-
     for (const card of stagedCards) {
-      const currentCount = collection[String(card.id)] ?? 0;
-      const isNew = currentCount === 0;
-      await addCard(String(card.id));
+      const isNew = (collection[String(card.id)] ?? 0) === 0;
       const numId = typeof card.id === 'number' ? card.id : NaN;
       const page = Math.ceil(numId / 9);
       if (Number.isFinite(page) && page >= 1 && page <= 70) binderPages.add(page);
       if (isNew) newCount++; else dupeCount++;
+    }
+
+    setCommitting(true);
+    try {
+      await batchAddCards(stagedCards.map(c => String(c.id)));
+    } finally {
+      setCommitting(false);
     }
 
     const pageList = [...binderPages].sort((a, b) => a - b).join(', ');
@@ -322,8 +328,27 @@ export default function CardInput({ onDone }: { onDone?: () => void } = {}) {
               type="button"
               className="btn-primary w-full mt-4"
               onClick={handleCommit}
+              disabled={committing}
+              style={committing ? { opacity: 0.7, cursor: 'not-allowed' } : undefined}
             >
-              Add {stagedCards.length} card{stagedCards.length > 1 ? 's' : ''} to Collection
+              {committing ? (
+                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                  <span
+                    style={{
+                      display: 'inline-block',
+                      width: 16,
+                      height: 16,
+                      border: '2px solid rgba(255,255,255,0.4)',
+                      borderTopColor: '#fff',
+                      borderRadius: '50%',
+                      animation: 'spin 0.7s linear infinite',
+                    }}
+                  />
+                  Saving…
+                </span>
+              ) : (
+                `Add ${stagedCards.length} card${stagedCards.length > 1 ? 's' : ''} to Collection`
+              )}
             </button>
           </>
         )}

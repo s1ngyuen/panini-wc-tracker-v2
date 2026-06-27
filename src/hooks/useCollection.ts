@@ -63,6 +63,49 @@ export function useCollection() {
   }
 
   /**
+   * Add multiple cards in one shot: single optimistic update, parallel PATCHes,
+   * one revalidation. Avoids SWR cache races that happen when calling addCard
+   * in a loop (each individual revalidate can overwrite the next card's optimistic).
+   */
+  async function batchAddCards(cardIds: string[]): Promise<{ failed: number }> {
+    // Compute final counts (handles duplicates in the batch)
+    const updates: CollectionMap = {};
+    for (const cardId of cardIds) {
+      const base = collection[cardId] ?? 0;
+      updates[cardId] = (updates[cardId] ?? base) + 1;
+    }
+
+    // Single optimistic update
+    await mutate({ ...(data ?? {}), ...updates }, false);
+
+    // All PATCHes in parallel
+    let failed = 0;
+    await Promise.all(
+      Object.entries(updates).map(async ([cardId, count]) => {
+        try {
+          const res = await fetch('/api/collection', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cardId, count }),
+          });
+          if (!res.ok) failed++;
+        } catch {
+          failed++;
+        }
+      })
+    );
+
+    if (failed > 0) {
+      showToast(`${failed} card(s) failed to save`, 'error');
+    }
+
+    // Single revalidation to sync with server truth
+    await mutate();
+
+    return { failed };
+  }
+
+  /**
    * Decrement a card's count by `qty` (defaults to 1), floored at 0 (which
    * removes the key from the collection entirely).
    */
@@ -83,6 +126,7 @@ export function useCollection() {
     collection,
     isLoading,
     addCard,
+    batchAddCards,
     removeCard,
     setCardCount,
     mutate,
