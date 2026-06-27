@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/useToast';
 
 interface Props {
   collection: CollectionMap;
+  pendingIncomingIds: Set<string>;
   onMax: (results: TradeGroup[]) => void;
   onGenerateTrade: (groups: TradeGroup[], partnerName: string) => void;
   partnerName: string;
@@ -17,6 +18,7 @@ interface Props {
 
 export default function GenerateTradeForm({
   collection,
+  pendingIncomingIds,
   onMax,
   onGenerateTrade,
   partnerName,
@@ -51,9 +53,9 @@ export default function GenerateTradeForm({
       return null;
     }
 
-    // Cards we are missing (count === 0 in collection)
+    // Cards we are missing: count === 0 AND not already incoming via a confirmed (non-proposed) trade
     const userMissing = new Set(
-      CARDS.filter((c) => (collection[String(c.id)] ?? 0) === 0).map((c) => c.id)
+      CARDS.filter((c) => (collection[String(c.id)] ?? 0) === 0 && !pendingIncomingIds.has(String(c.id))).map((c) => c.id)
     );
 
     // Cards we own with count > 1 (duplicates available to offer)

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useCollection } from '@/hooks/useCollection';
 import { useTrades } from '@/hooks/useTrades';
 import { useToast } from '@/hooks/useToast';
@@ -17,6 +17,17 @@ export default function SwapsView() {
   const { collection, addCard, removeCard } = useCollection();
   const { trades, addTrade, updateTrade, deleteTrade } = useTrades();
   const { show: showToast } = useToast();
+
+  // Cards incoming via non-proposed pending trades — excluded from "still need" when generating
+  const pendingIncomingIds = useMemo<Set<string>>(() => {
+    const ids = new Set<string>();
+    trades.forEach(trade => {
+      if (!trade.proposed) {
+        trade.requesting.forEach(item => ids.add(item.cardId));
+      }
+    });
+    return ids;
+  }, [trades]);
 
   // Generate panel tab
   const [activeTab, setActiveTab] = useState<ActiveTab>('new');
@@ -181,6 +192,7 @@ export default function SwapsView() {
             <>
               <GenerateTradeForm
                 collection={collection}
+                pendingIncomingIds={pendingIncomingIds}
                 onMax={handleMax}
                 onGenerateTrade={handleGenerateTrade}
                 partnerName={partnerName}
