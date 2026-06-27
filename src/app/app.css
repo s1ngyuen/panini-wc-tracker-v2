@@ -1272,7 +1272,7 @@ body::before {
   .header-logo img { height: 30px; }
 
   #nav-left,
-  #nav-right-wrap { display: none; }
+  #nav-right { display: none; }
 
   #mobile-menu-btn { display: flex; }
 

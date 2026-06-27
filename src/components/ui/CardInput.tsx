@@ -31,7 +31,7 @@ function searchCards(query: string): AnyCard[] {
   return ALL_CARDS.filter(c => c.playerName.toLowerCase().includes(lower)).slice(0, 8);
 }
 
-export default function CardInput() {
+export default function CardInput({ onDone }: { onDone?: () => void } = {}) {
   const { collection, addCard } = useCollection();
   const { show: showToast } = useToast();
 
@@ -188,7 +188,11 @@ export default function CardInput() {
     );
 
     setStagedCards([]);
-    inputRef.current?.focus();
+    if (onDone) {
+      onDone();
+    } else {
+      inputRef.current?.focus();
+    }
   }
 
   return (

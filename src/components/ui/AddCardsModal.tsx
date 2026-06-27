@@ -74,7 +74,7 @@ export default function AddCardsModal({
 
         {/* CardInput */}
         <div style={{ padding: '16px 4px 8px' }}>
-          <CardInput />
+          <CardInput onDone={onClose} />
         </div>
       </div>
     </div>
