@@ -9,6 +9,10 @@ type AnyCard = Card | BonusCard;
 
 const ALL_CARDS: AnyCard[] = [...CARDS, ...BONUS_CARDS];
 
+function normalise(s: string): string {
+  return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+}
+
 function searchCards(query: string): AnyCard[] {
   const trimmed = query.trim();
   if (trimmed.length < 2) return [];
@@ -24,11 +28,17 @@ function searchCards(query: string): AnyCard[] {
   const bonusById = BONUS_CARDS_BY_ID[upperTrimmed] || BONUS_CARDS_BY_ID[trimmed];
   if (bonusById) return [bonusById];
 
-  // Name search across all cards
-  const lower = trimmed.toLowerCase();
-  const exact = ALL_CARDS.filter(c => c.playerName.toLowerCase() === lower);
-  if (exact.length) return exact.slice(0, 8);
-  return ALL_CARDS.filter(c => c.playerName.toLowerCase().includes(lower)).slice(0, 8);
+  // Bonus ID prefix search — e.g. "DB" lists all DB1–DB24 WC Masters
+  const bonusByPrefix = BONUS_CARDS.filter(c =>
+    String(c.id).toUpperCase().startsWith(upperTrimmed)
+  );
+  if (bonusByPrefix.length) return bonusByPrefix.slice(0, 12);
+
+  // Name search across all cards (accent-normalised)
+  const normQuery = normalise(trimmed);
+  const exact = ALL_CARDS.filter(c => normalise(c.playerName) === normQuery);
+  if (exact.length) return exact.slice(0, 12);
+  return ALL_CARDS.filter(c => normalise(c.playerName).includes(normQuery)).slice(0, 12);
 }
 
 export default function CardInput({ onDone }: { onDone?: () => void } = {}) {
@@ -208,7 +218,7 @@ export default function CardInput({ onDone }: { onDone?: () => void } = {}) {
             id="card-search-input"
             type="search"
             className="form-input pr-12"
-            placeholder="e.g. 42 or Messi"
+            placeholder="e.g. 42, Messi, or DB1 for WC Masters"
             autoComplete="off"
             autoCorrect="off"
             autoCapitalize="off"
@@ -240,6 +250,9 @@ export default function CardInput({ onDone }: { onDone?: () => void } = {}) {
                 >
                   <span className="search-dropdown-item__id">#{card.id}</span>
                   <span className="font-semibold text-sm">{card.playerName}</span>
+                  {'cardType' in card && (card as {cardType:string}).cardType === 'WC Master' && (
+                    <span style={{ fontSize: '10px', background: '#C5A028', color: '#fff', padding: '1px 5px', borderRadius: 3, marginLeft: 4, flexShrink: 0 }}>WCM</span>
+                  )}
                   <span className="text-xs ml-auto" style={{ color: '#666' }}>{card.country}</span>
                 </div>
               ))}
@@ -284,7 +297,10 @@ export default function CardInput({ onDone }: { onDone?: () => void } = {}) {
                     />
                     <div className="bulk-add-row__info">
                       <span className="bulk-add-row__name">{card.playerName}</span>
-                      <span className="bulk-add-row__meta">#{card.id} · {card.country}</span>
+                      <span className="bulk-add-row__meta">
+                        #{card.id} · {card.country}
+                        {'cardType' in card && (card as {cardType:string}).cardType === 'WC Master' && ' · WC Master'}
+                      </span>
                     </div>
                     <span className={`bulk-add-row__badge bulk-add-row__badge--${isNew ? 'new' : 'dupe'}`}>
                       {isNew ? 'NEW' : 'DUPE'}
