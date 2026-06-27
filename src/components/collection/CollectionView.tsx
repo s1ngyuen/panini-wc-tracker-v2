@@ -6,6 +6,7 @@ import { useCollection } from '@/hooks/useCollection';
 import { useTrades } from '@/hooks/useTrades';
 import { useMigration } from '@/hooks/useMigration';
 import { getPriceSummary, loadPrices } from '@/lib/prices';
+import { useToast } from '@/hooks/useToast';
 import StatTiles from './StatTiles';
 import ProgressBar from './ProgressBar';
 import ProgressModal from './ProgressModal';
@@ -107,6 +108,22 @@ export default function CollectionView() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  const { show: showToast } = useToast();
+
+  async function handleGenerateTradingMessage() {
+    const missing    = CARDS.filter(c => (collection[String(c.id)] ?? 0) === 0);
+    const duplicates = CARDS.filter(c => (collection[String(c.id)] ?? 0) >= 2);
+    const needList   = missing.map(c => `#${c.id}`).join(', ') || 'None';
+    const dupeList   = duplicates.map(c => `#${c.id}`).join(', ') || 'None';
+    const msg = `I am looking for: ${needList}\n\nI have duplicates of: ${dupeList}`;
+    try {
+      await navigator.clipboard.writeText(msg);
+      showToast('Trading message copied to clipboard!', 'success');
+    } catch {
+      showToast("Couldn't copy — try manually.", 'error');
+    }
+  }
+
   async function handleLightboxRemove(qty: number) {
     if (!lightboxCard) return;
     await removeCard(String(lightboxCard.id), qty);
@@ -119,9 +136,17 @@ export default function CollectionView() {
 
   return (
     <>
-      {/* Page title */}
-      <div style={{ padding: '24px 16px 20px' }}>
+      {/* Page title + trading message button */}
+      <div style={{ padding: '24px 16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span className="page-title">Collection</span>
+        <button
+          type="button"
+          className="btn-secondary"
+          style={{ fontSize: '12px', padding: '6px 12px', whiteSpace: 'nowrap' }}
+          onClick={handleGenerateTradingMessage}
+        >
+          Generate Trading Message
+        </button>
       </div>
 
       {/* Progress bar — clickable to open modal */}
