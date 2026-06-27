@@ -29,10 +29,6 @@ export default function SwapsView() {
 
   // ── Handlers ────────────────────────────────────────────────────────────────
 
-  function handleAnalyse(results: TradeGroup[]) {
-    setAnalysisResults(results);
-  }
-
   function handleMax(results: TradeGroup[]) {
     setAnalysisResults(results);
   }
@@ -184,7 +180,6 @@ export default function SwapsView() {
             <>
               <GenerateTradeForm
                 collection={collection}
-                onAnalyse={handleAnalyse}
                 onMax={handleMax}
                 onGenerateTrade={handleGenerateTrade}
                 partnerName={partnerName}

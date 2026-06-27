@@ -194,7 +194,6 @@ export default function ProgressModal({ isOpen, onClose, collection, pendingCard
                     const p  = Math.round((owned   / total) * 100);
                     const pp = Math.round((pending  / total) * 100);
                     const colors = TEAM_COLORS[team] ?? { fill: '#304FFE', track: '#E4EAFF' };
-                    const initials = teamInitials(team);
 
                     return (
                       <div

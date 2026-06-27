@@ -9,7 +9,6 @@ import { useToast } from '@/hooks/useToast';
 
 interface Props {
   collection: CollectionMap;
-  onAnalyse: (results: TradeGroup[]) => void;
   onMax: (results: TradeGroup[]) => void;
   onGenerateTrade: (groups: TradeGroup[], partnerName: string) => void;
   partnerName: string;
@@ -18,7 +17,6 @@ interface Props {
 
 export default function GenerateTradeForm({
   collection,
-  onAnalyse,
   onMax,
   onGenerateTrade,
   partnerName,
@@ -71,16 +69,6 @@ export default function GenerateTradeForm({
       .sort((a, b) => nationRank(a.country) - nationRank(b.country));
 
     return { youGet, myDuplicates, partnerWants };
-  }
-
-  function handleAnalyse() {
-    const data = getInputData();
-    if (!data) return;
-    const { youGet, myDuplicates, partnerWants } = data;
-    const groups = equalMode
-      ? buildEqualOffer(youGet, myDuplicates, partnerWants)
-      : buildSuggestedOffer(youGet, myDuplicates, partnerWants);
-    onAnalyse(groups);
   }
 
   function handleGenerateTrade() {
