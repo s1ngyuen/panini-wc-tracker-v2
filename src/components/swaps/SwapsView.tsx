@@ -117,9 +117,10 @@ export default function SwapsView() {
 
   async function handleUpdateTrade(id: string, body: Partial<Trade>) {
     const update = {
-      ...(body.offering !== undefined && { offering: body.offering }),
+      ...(body.offering   !== undefined && { offering:   body.offering }),
       ...(body.requesting !== undefined && { requesting: body.requesting }),
       ...(body.trade_with !== undefined && { trade_with: body.trade_with ?? undefined }),
+      ...(body.proposed   !== undefined && { proposed:   body.proposed }),
     };
     await updateTrade(id, update);
   }
