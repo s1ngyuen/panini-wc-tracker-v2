@@ -25,13 +25,14 @@ export default function BonusPanel({ tabKey, collection, pendingCardIds, onCardC
       const filtered = all.filter(c => {
         if (!status) return true;
         const count = collection[String(c.id)] ?? 0;
+        const isPending = pendingCardIds.has(String(c.id));
         if (status === 'owned'   && count < 1)  return false;
-        if (status === 'missing' && count >= 1) return false;
+        if (status === 'missing' && (count >= 1 || isPending)) return false;
         return true;
       });
       return { cat, filtered };
     });
-  }, [cats, status, collection]);
+  }, [cats, status, collection, pendingCardIds]);
 
   const totalShown = cardsByCat.reduce((sum, { filtered }) => sum + filtered.length, 0);
 

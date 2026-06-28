@@ -106,7 +106,7 @@ export default function CollectionView() {
   const { show: showToast } = useToast();
 
   async function handleGenerateTradingMessage() {
-    const missing    = CARDS.filter(c => (collection[String(c.id)] ?? 0) === 0);
+    const missing    = CARDS.filter(c => (collection[String(c.id)] ?? 0) === 0 && !pendingCardIds.has(String(c.id)));
     const duplicates = CARDS.filter(c => (collection[String(c.id)] ?? 0) >= 2);
     const needList   = missing.map(c => `#${c.id}`).join(', ') || 'None';
     const dupeList   = duplicates.map(c => `#${c.id}`).join(', ') || 'None';

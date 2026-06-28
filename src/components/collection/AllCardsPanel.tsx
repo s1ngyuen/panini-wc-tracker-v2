@@ -29,13 +29,14 @@ export default function AllCardsPanel({ collection, pendingCardIds, onCardClick 
       if (filter.cardType && card.cardType !== filter.cardType) return false;
       if (filter.status) {
         const count = collection[String(card.id)] ?? 0;
+        const isPending = pendingCardIds.has(String(card.id));
         if (filter.status === 'owned'      && count < 1)  return false;
-        if (filter.status === 'missing'    && count > 0)  return false;
+        if (filter.status === 'missing'    && (count > 0 || isPending)) return false;
         if (filter.status === 'duplicates' && count < 2)  return false;
       }
       return true;
     });
-  }, [filter, collection]);
+  }, [filter, collection, pendingCardIds]);
 
   return (
     <div className="coll-panel">
